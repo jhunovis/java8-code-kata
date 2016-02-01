@@ -30,7 +30,7 @@ public class Exercise2Test {
         /**
          * Try to get from key "Alice" using {@link Map#getOrDefault}. If the key doesn't exist, use 30 as default.
          */
-        Integer defaultVal = map.getOrDefault(null, null);
+        Integer defaultVal = map.getOrDefault("Alice", 30);
 
         assertThat(defaultVal, is(30));
     }
@@ -43,8 +43,8 @@ public class Exercise2Test {
         /**
          * Try to put 2 entry with key as "Alice" value as 32, key as "Joe" and value as 32 using {@link Map#putIfAbsent}.
          */
-        map.putIfAbsent(null, null);
-        map.putIfAbsent(null, null);
+        map.putIfAbsent("Alice", 32);
+        map.putIfAbsent("Joe", 32);
 
         assertThat(map.get("Alice"), is(32));
         assertThat(map.get("Joe"), is(22));
@@ -59,9 +59,9 @@ public class Exercise2Test {
          * Merge 2 entry to {@link map} with key as "Alice" value as 32, key as "Joe" and value as 32 using {@link Map#merge}.
          * If the value already exist for the key, remap with sum value.
          */
-        BiFunction<Object, Object, Integer> remappingFunction = null;
-        map.merge(null, null, remappingFunction);
-        map.merge(null, null, remappingFunction);
+        BiFunction<Integer, Integer, Integer> sumUpOldAndNewValue = (oldValue, newValue) -> oldValue + newValue;
+        map.merge("Alice", 32, sumUpOldAndNewValue);
+        map.merge("Joe", 32, sumUpOldAndNewValue);
 
         assertThat(map.get("Alice"), is(32));
         assertThat(map.get("Joe"), is(54));
@@ -75,10 +75,10 @@ public class Exercise2Test {
         /**
          * Try to increment the value for keys "Joe", "Steven" and "Alice".
          */
-        BiFunction<Object, Object, Integer> remappingFunction = null;
-        map.computeIfPresent(null, remappingFunction);
-        map.computeIfPresent(null, remappingFunction);
-        map.computeIfPresent(null, remappingFunction);
+        BiFunction<Object, Integer, Integer> increaseValue = (key, value) -> value + 1;
+        map.computeIfPresent("Joe", increaseValue);
+        map.computeIfPresent("Steven", increaseValue);
+        map.computeIfPresent("Alice", increaseValue);
 
         assertThat(map.get("Joe"), is(23));
         assertThat(map.get("Steven"), is(28));
