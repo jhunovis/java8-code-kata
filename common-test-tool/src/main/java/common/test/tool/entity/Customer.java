@@ -47,4 +47,14 @@ public class Customer {
     public void setWantToBuy(List<Item> wantToBuy) {
         this.wantToBuy = wantToBuy;
     }
+
+    @Override
+    public String toString() {
+        return "Customer{" +
+                "name='" + name + '\'' +
+                ", age=" + age +
+                ", budget=" + budget +
+                ", wantToBuy=" + wantToBuy +
+                '}';
+    }
 }
