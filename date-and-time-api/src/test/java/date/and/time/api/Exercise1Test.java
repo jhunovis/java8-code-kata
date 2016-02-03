@@ -10,7 +10,6 @@ import java.time.Month;
 import java.time.Period;
 import java.time.temporal.ChronoUnit;
 import java.time.temporal.TemporalAdjusters;
-import java.time.temporal.TemporalUnit;
 
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.*;
