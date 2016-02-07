@@ -7,17 +7,13 @@ import common.test.tool.util.CollectorImpl;
 
 import org.junit.Test;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.EnumSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.BinaryOperator;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collector;
+import java.util.stream.Collectors;
 
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.is;
@@ -34,10 +30,15 @@ public class Exercise9Test extends ClassicOnlineStore {
          * Implement a {@link Collector} which can create a String with comma separated names shown in the assertion.
          * The collector will be used by serial stream.
          */
-        Supplier<Object> supplier = null;
-        BiConsumer<Object, String> accumulator = null;
-        BinaryOperator<Object> combiner = null;
-        Function<Object, String> finisher = null;
+        Supplier<StringBuilder> supplier = StringBuilder::new;
+        BiConsumer<StringBuilder, String> accumulator = (builder, element) -> {
+            if (builder.length() > 0) {
+                builder.append(",");
+            }
+            builder.append(element);
+        };
+        BinaryOperator<StringBuilder> combiner = StringBuilder::append;
+        Function<StringBuilder, String> finisher = StringBuilder::toString;
 
         Collector<String, ?, String> toCsv =
             new CollectorImpl<>(supplier, accumulator, combiner, finisher, Collections.emptySet());
@@ -55,10 +56,21 @@ public class Exercise9Test extends ClassicOnlineStore {
          * values as {@link Set} of customers who are wanting to buy that item.
          * The collector will be used by parallel stream.
          */
-        Supplier<Object> supplier = null;
-        BiConsumer<Object, Customer> accumulator = null;
-        BinaryOperator<Object> combiner = null;
-        Function<Object, Map<String, Set<String>>> finisher = null;
+        Supplier<Map<String, Set<String>>> supplier = HashMap::new;
+        BiConsumer<Map<String, Set<String>>, Customer> accumulator = (i, c) -> c.getWantToBuy().stream()
+                .forEach(w -> {
+                    HashSet<String> customers = new HashSet<>();
+                    customers.add(c.getName());
+                    i.put(w.getName(), customers);
+                });
+        BinaryOperator<Map<String, Set<String>>> combiner = (m1, m2) -> {
+            m1.forEach((i, c) -> m2.merge(i, c, (v1, v2) -> {
+                v1.addAll(v2);
+                return v1;
+            }));
+            return m2;
+        };
+        Function<Map<String, Set<String>>, Map<String, Set<String>>> finisher = Function.identity();
 
         Collector<Customer, ?, Map<String, Set<String>>> toItemAsKey =
             new CollectorImpl<>(supplier, accumulator, combiner, finisher, EnumSet.of(
