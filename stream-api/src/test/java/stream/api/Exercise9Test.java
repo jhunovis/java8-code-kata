@@ -41,7 +41,7 @@ public class Exercise9Test extends ClassicOnlineStore {
         Function<StringBuilder, String> finisher = StringBuilder::toString;
 
         Collector<String, ?, String> toCsv =
-            new CollectorImpl<>(supplier, accumulator, combiner, finisher, Collections.emptySet());
+                new CollectorImpl<>(supplier, accumulator, combiner, finisher, Collections.emptySet());
         String nameAsCsv = customerList.stream().map(Customer::getName).collect(toCsv);
         assertThat(nameAsCsv, is("Joe,Steven,Patrick,Diana,Chris,Kathy,Alice,Andrew,Martin,Amy"));
     }
@@ -73,9 +73,9 @@ public class Exercise9Test extends ClassicOnlineStore {
         Function<Map<String, Set<String>>, Map<String, Set<String>>> finisher = Function.identity();
 
         Collector<Customer, ?, Map<String, Set<String>>> toItemAsKey =
-            new CollectorImpl<>(supplier, accumulator, combiner, finisher, EnumSet.of(
-                Collector.Characteristics.CONCURRENT,
-                Collector.Characteristics.IDENTITY_FINISH));
+                new CollectorImpl<>(supplier, accumulator, combiner, finisher, EnumSet.of(
+                        Collector.Characteristics.CONCURRENT,
+                        Collector.Characteristics.IDENTITY_FINISH));
         Map<String, Set<String>> itemMap = customerList.stream().parallel().collect(toItemAsKey);
         assertThat(itemMap.get("plane"), containsInAnyOrder("Chris"));
         assertThat(itemMap.get("onion"), containsInAnyOrder("Patrick", "Amy"));
@@ -100,7 +100,35 @@ public class Exercise9Test extends ClassicOnlineStore {
          * "1-3" will be "111"
          * "7,1-3,5" will be "1110101"
          */
-        Collector<String, ?, String> toBitString = null;
+        Supplier<BitSet> supplier = BitSet::new;
+        BiConsumer<BitSet, String> biConsumer = (BitSet set, String text) -> {
+            if (text.contains("-")) {
+                String[] split = text.split("-");
+                set.set(Integer.valueOf(split[0]) - 1, Integer.valueOf(split[1]));
+            } else {
+                set.set(Integer.valueOf(text) - 1);
+            }
+        };
+        BinaryOperator<BitSet> binaryOperator = (BitSet set1, BitSet set2) -> {
+            set1.or(set2);
+            return set1;
+        };
+        Function<BitSet, String> finisher = (BitSet set) -> {
+            StringBuilder stringBuilder = new StringBuilder();
+            for (int i=0; i < set.length(); i++) {
+                stringBuilder.append(
+                        set.get(i) ? "1" : "0"
+                );
+            }
+            return stringBuilder.toString();
+        };
+
+        Collector<String, BitSet, String> toBitString = Collector.of(
+                supplier,
+                biConsumer,
+                binaryOperator,
+                finisher
+        );
 
         String bitString = Arrays.stream(bitList.split(",")).collect(toBitString);
         assertThat(bitString, is("01011000101001111000011100000000100001110111010101")
